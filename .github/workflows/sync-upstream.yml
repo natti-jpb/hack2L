@@ -1,0 +1,24 @@
+name: Sync fork from upstream
+
+# Mantém a main deste fork espelhando a main de julio-amaral-oliveira/hack2L.
+# A Vercel (projeto brandloop-lp) está conectada a este fork: quando a main
+# avança, o deploy da LP dispara automaticamente.
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Mirror upstream main
+        run: |
+          git fetch https://github.com/julio-amaral-oliveira/hack2L.git main
+          git push origin FETCH_HEAD:refs/heads/main --force
