@@ -19,6 +19,14 @@ jobs:
         with:
           fetch-depth: 0
       - name: Mirror upstream main
+        id: sync
         run: |
+          BEFORE=$(git ls-remote origin refs/heads/main | cut -f1)
           git fetch https://github.com/julio-amaral-oliveira/hack2L.git main
+          AFTER=$(git rev-parse FETCH_HEAD)
           git push origin FETCH_HEAD:refs/heads/main --force
+          [ "$BEFORE" != "$AFTER" ] && echo "changed=true" >> "$GITHUB_OUTPUT" || true
+      # Pushes feitos pelo bot nao disparam deploy na Vercel — o hook cobre isso.
+      - name: Trigger Vercel deploy
+        if: steps.sync.outputs.changed == 'true'
+        run: curl -fsS -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}" > /dev/null
